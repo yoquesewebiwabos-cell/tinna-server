@@ -13,15 +13,14 @@ load_dotenv()
 MEMORY_FILE = "memory.json"
 
 # cargar memoria
-if os.path.exists(MEMORY_FILE):
-    with open(MEMORY_FILE, "r", encoding="utf-8") as f:
-        conversation_history = json.load(f)
-else:
+try:
+    if os.path.exists(MEMORY_FILE):
+        with open(MEMORY_FILE, "r", encoding="utf-8") as f:
+            conversation_history = json.load(f)
+    else:
+        conversation_history = []
+except json.JSONDecodeError:
     conversation_history = []
-
-def save_memory():
-    with open(MEMORY_FILE, "w", encoding="utf-8") as f:
-        json.dump(conversation_history, f, ensure_ascii=False, indent=2)
 
 # =====================
 # IA DE TINNA
