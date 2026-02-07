@@ -1,90 +1,49 @@
-import os
-import json
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
+from fastapi.middleware.cors import CORSMiddleware
+import os, json
 from dotenv import load_dotenv
 from openai import OpenAI
 
-# =====================
-# CONFIG
-# =====================
 load_dotenv()
 
-MEMORY_FILE = "memory.json"
+app = FastAPI()
 
-def save_memory():
-    with open(MEMORY_FILE, "w", encoding="utf-8") as f:
-        json.dump(conversation_history, f, ensure_ascii=False, indent=2)
+# 🔥 CORS (Unity lo agradece)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
-# cargar memoria (acepta GROQ_API_KEY o GROQ_KEY)
-GROQ_KEY = os.environ.get("GROQ_API_KEY") or os.environ.get("GROQ_KEY")
-
-if not GROQ_KEY:
-    raise RuntimeError("❌ GROQ_API_KEY no encontrada. Revisa Render environment variables.")
+GROQ_KEY = os.environ.get("GROQ_KEY")
 
 client = OpenAI(
     api_key=GROQ_KEY,
     base_url="https://api.groq.com/openai/v1"
 )
-conversation_history = []
 
-SYSTEM_PROMPT = """
-You are Tinna, a virtual pet girl.
-Speak in short sentences.
-Show emotions clearly.
-Never mention being an AI.
-"""
-
-def Tinna_AI(user_text: str):
-    global conversation_history
-
-    conversation_history.append({
-        "role": "user",
-        "content": user_text
-    })
-
-    messages = [
-        {"role": "system", "content": SYSTEM_PROMPT},
-        *conversation_history
-    ]
-
-    response = client.chat.completions.create(
-        model="openai/gpt-oss-20b",
-        messages=messages,
-        temperature=0.8
-    )
-    
-    ai_response = response.choices[0].message.content.strip()
-    ai_response = ai_response.replace("\n", " ")
-
-    conversation_history.append({
-        "role": "assistant",
-        "content": ai_response
-    })
-
-    save_memory()
-    return ai_response
-
-# =====================
-# FASTAPI
-# =====================
-app = FastAPI()
+SYSTEM_PROMPT = "You are Tinna, a virtual pet girl."
 
 @app.get("/")
 def root():
-    return {"status": "Tinna is online 🐰🔥"}
+    return {"status": "online"}
 
-@app.post("/")
-def talk(data: dict):
-    # <- leer "message" porque Unity manda {"message":"..."}
-    user_text = data.get("message", "").strip()
-
-    if not user_text:
+# ✅ ENDPOINT CLARO
+@app.post("/chat")
+def chat(data: dict):
+    text = data.get("text", "").strip()
+    if not text:
         return {"reply": ""}
 
-    reply = Tinna_AI(user_text)
-
-    return JSONResponse(
-        content={"reply": reply},
-        media_type="application/json; charset=utf-8"
+    response = client.chat.completions.create(
+        model="openai/gpt-oss-20b",
+        messages=[
+            {"role": "system", "content": SYSTEM_PROMPT},
+            {"role": "user", "content": text}
+        ]
     )
+
+    reply = response.choices[0].message.content
+    return {"reply": reply}
