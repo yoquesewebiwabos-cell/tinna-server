@@ -12,6 +12,10 @@ load_dotenv()
 
 MEMORY_FILE = "memory.json"
 
+def save_memory():
+    with open(MEMORY_FILE, "w", encoding="utf-8") as f:
+        json.dump(conversation_history, f, ensure_ascii=False, indent=2)
+
 # cargar memoria
 try:
     if os.path.exists(MEMORY_FILE):
@@ -50,12 +54,13 @@ def Tinna_AI(user_text: str):
         *conversation_history
     ]
 
-    response = client.responses.create(
+    response = client.chat.completions.create(
         model="openai/gpt-oss-20b",
-        input=messages
+        messages=messages,
+        temperature=0.8
     )
 
-    ai_response = response.output_text.strip()
+    ai_response = response.choices[0].message.content.strip()
 
     conversation_history.append({
         "role": "assistant",
@@ -70,6 +75,10 @@ def Tinna_AI(user_text: str):
 # =====================
 app = FastAPI()
 
+@app.get("/")
+def root():
+    return {"status": "Tinna is online 🐰🔥"}
+
 @app.post("/talk")
 def talk(data: dict):
     user_text = data.get("text", "").strip()
@@ -83,7 +92,3 @@ def talk(data: dict):
         content={"reply": reply},
         media_type="application/json; charset=utf-8"
     )
-
-# 👇 IMPORTANTE
-# NO uvicorn.run aquí
-# Render lo maneja solo
