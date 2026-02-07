@@ -75,7 +75,7 @@ app = FastAPI()
 def root():
     return {"status": "Tinna is online 🐰🔥"}
 
-@app.post("/talk")
+@app.post("/chat")
 def talk(data: dict):
     user_text = data.get("text", "").strip()
 
