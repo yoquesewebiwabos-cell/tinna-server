@@ -53,8 +53,10 @@ def Tinna_AI(user_text: str):
         messages=messages,
         temperature=0.8
     )
-
+    
     ai_response = response.choices[0].message.content.strip()
+    ai_response = ai_response.replace("\n", " ")
+
 
     conversation_history.append({
         "role": "assistant",
@@ -69,7 +71,7 @@ def Tinna_AI(user_text: str):
 # =====================
 app = FastAPI()
 
-@app.get("/")
+@app.get("/talk")
 def root():
     return {"status": "Tinna is online 🐰🔥"}
 
