@@ -17,7 +17,7 @@ def save_memory():
         json.dump(conversation_history, f, ensure_ascii=False, indent=2)
 
 # cargar memoria
-GROQ_KEY = os.environ.get("GROQ_API_KEY")
+GROQ_KEY = os.environ.get("GROQ_KEY")
 
 if not GROQ_KEY:
     raise RuntimeError("❌ GROQ_API_KEY no encontrada. Revisa Render.")
