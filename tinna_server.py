@@ -16,11 +16,11 @@ def save_memory():
     with open(MEMORY_FILE, "w", encoding="utf-8") as f:
         json.dump(conversation_history, f, ensure_ascii=False, indent=2)
 
-# cargar memoria
-GROQ_KEY = os.environ.get("GROQ_KEY")
+# cargar memoria (acepta GROQ_API_KEY o GROQ_KEY)
+GROQ_KEY = os.environ.get("GROQ_API_KEY") or os.environ.get("GROQ_KEY")
 
 if not GROQ_KEY:
-    raise RuntimeError("❌ GROQ_API_KEY no encontrada. Revisa Render.")
+    raise RuntimeError("❌ GROQ_API_KEY no encontrada. Revisa Render environment variables.")
 
 client = OpenAI(
     api_key=GROQ_KEY,
@@ -57,7 +57,6 @@ def Tinna_AI(user_text: str):
     ai_response = response.choices[0].message.content.strip()
     ai_response = ai_response.replace("\n", " ")
 
-
     conversation_history.append({
         "role": "assistant",
         "content": ai_response
@@ -77,7 +76,8 @@ def root():
 
 @app.post("/")
 def talk(data: dict):
-    user_text = data.get("text", "").strip()
+    # <- leer "message" porque Unity manda {"message":"..."}
+    user_text = data.get("message", "").strip()
 
     if not user_text:
         return {"reply": ""}
