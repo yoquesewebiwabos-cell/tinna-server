@@ -17,22 +17,16 @@ def save_memory():
         json.dump(conversation_history, f, ensure_ascii=False, indent=2)
 
 # cargar memoria
-try:
-    if os.path.exists(MEMORY_FILE):
-        with open(MEMORY_FILE, "r", encoding="utf-8") as f:
-            conversation_history = json.load(f)
-    else:
-        conversation_history = []
-except json.JSONDecodeError:
-    conversation_history = []
+GROQ_KEY = os.environ.get("GROQ_API_KEY")
 
-# =====================
-# IA DE TINNA
-# =====================
+if not GROQ_KEY:
+    raise RuntimeError("❌ GROQ_API_KEY no encontrada. Revisa Render.")
+
 client = OpenAI(
-    api_key=os.environ.get("GROQ_API_KEY"),
+    api_key=GROQ_KEY,
     base_url="https://api.groq.com/openai/v1"
 )
+conversation_history = []
 
 SYSTEM_PROMPT = """
 You are Tinna, a virtual pet girl.
