@@ -71,11 +71,11 @@ def Tinna_AI(user_text: str):
 # =====================
 app = FastAPI()
 
-@app.get("/talk")
+@app.get("/Chat")
 def root():
     return {"status": "Tinna is online 🐰🔥"}
 
-@app.post("/chat")
+@app.post("/Chat")
 def talk(data: dict):
     user_text = data.get("text", "").strip()
 
